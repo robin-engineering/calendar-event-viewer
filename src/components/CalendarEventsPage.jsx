@@ -6,6 +6,38 @@ const EventsContainer = styled.div`
   max-width: 800px;
   margin: 0 auto;
   padding: 2rem;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+`;
+
+const EventsHeader = styled.h1`
+  margin-bottom: 1.5rem;
+`;
+
+const ScrollableEvents = styled.div`
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 1rem;
+  
+  /* Custom scrollbar styling */
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: #666;
+  }
 `;
 
 const EventCard = styled.div`
@@ -16,13 +48,19 @@ const EventCard = styled.div`
   margin-bottom: 1.5rem;
 `;
 
-const EventTitle = styled.h3`
+const EventTitle = styled.h2`
   font-size: 1.25rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 `;
 
 const EventDetails = styled.p`
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+`;
+
+const EventTime = styled.div`
   font-size: 0.875rem;
   color: #666;
   margin-bottom: 0.5rem;
@@ -38,26 +76,47 @@ const GET_EVENTS = gql`
         location
     }
 }
-
 `;
 
 const CalendarEventsPage = () => {
   const { loading, error, data } = useQuery(GET_EVENTS);
 
+  const formatDateTimeRange = (startTime, endTime) => {
+    const start = new Date(startTime);
+    const end = new Date(endTime);
+    
+    return `${start.toLocaleString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    })} • ${start.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric'
+    })} - ${end.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: 'numeric'
+    })}`;
+  };
+
   return (
     <EventsContainer>
-      <h2>Upcoming Calendar Events</h2>
+      <EventsHeader>Upcoming Calendar Events</EventsHeader>
       {loading && <p>Loading...</p>}
       {error && <p>Error!!</p>}
-      {data && data.GetEventsForUserByDateRange && 
-      data.GetEventsForUserByDateRange.map((event) => (
-        <EventCard key={event.id}>
-          <EventTitle>{event.title}</EventTitle>
-          <EventDetails>{event.start_time}</EventDetails>
-          <EventDetails>{event.end_time}</EventDetails>
-          <EventDetails>{event.location}</EventDetails>
-        </EventCard>
-      ))}
+      {data && data.GetEventsForUserByDateRange && (
+        <ScrollableEvents>
+          {data.GetEventsForUserByDateRange.map((event) => (
+            <EventCard key={event.id}>
+              <EventTitle>{event.title}</EventTitle>
+              <EventTime>
+                {formatDateTimeRange(event.start_time, event.end_time)}
+              </EventTime>
+              <EventDetails>{event.location}</EventDetails>
+            </EventCard>
+          ))}
+        </ScrollableEvents>
+      )}
     </EventsContainer>
   );
 };
