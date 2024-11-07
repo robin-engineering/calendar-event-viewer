@@ -5,8 +5,13 @@ export interface RobinEvent {
     end_time: string;
     location: string;
 }
+
+type TimeArgs = { 
+    startDateTime?: string; 
+    endDateTime?: string 
+};
   
-const events: RobinEvent[] = [
+const mockEvents: RobinEvent[] = [
     {
       id: 1,
       title: 'Weekly Team Meeting',
@@ -67,10 +72,10 @@ const events: RobinEvent[] = [
 
 const GetEventsForUserByDateRangeResolver = (
     _: unknown,
-    { startDateTime, endDateTime }: { startDateTime?: string; endDateTime?: string }
+    { startDateTime, endDateTime }: TimeArgs
 ): RobinEvent[] => {
     // Filter events based on the provided date-time range
-    return events.filter((event) => {
+    return mockEvents.filter((event) => {
         const eventDateTime = new Date(event.start_time);
         const start = startDateTime ? new Date(startDateTime) : new Date('1970-01-01');
         const end = endDateTime ? new Date(endDateTime) : new Date('9999-12-31');
@@ -78,4 +83,15 @@ const GetEventsForUserByDateRangeResolver = (
     });
 };
 
-export default GetEventsForUserByDateRangeResolver;
+const withAuthorization = (
+    resolver: typeof GetEventsForUserByDateRangeResolver,
+) => (
+    _: unknown,
+    args: TimeArgs
+) => {
+
+    return resolver(_, args);
+
+};
+
+export default withAuthorization(GetEventsForUserByDateRangeResolver);
