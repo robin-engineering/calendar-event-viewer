@@ -33,8 +33,8 @@ const GET_EVENTS = gql`
     GetEventsForUserByDateRange {
         id
         title
-        date
-        time
+        start_time
+        end_time
         location
     }
 }
@@ -53,8 +53,8 @@ const CalendarEventsPage = () => {
       data.GetEventsForUserByDateRange.map((event) => (
         <EventCard key={event.id}>
           <EventTitle>{event.title}</EventTitle>
-          <EventDetails>{event.date}</EventDetails>
-          <EventDetails>{event.time}</EventDetails>
+          <EventDetails>{event.start_time}</EventDetails>
+          <EventDetails>{event.end_time}</EventDetails>
           <EventDetails>{event.location}</EventDetails>
         </EventCard>
       ))}
