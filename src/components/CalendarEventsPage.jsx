@@ -67,9 +67,10 @@ const EventTime = styled.div`
 `;
 
 const GET_EVENTS = gql`
-  query GetEventsForUserByDateRange {
-    GetEventsForUserByDateRange {
+  query GetEventsForUserByDateRange($userId: String!) {
+    GetEventsForUserByDateRange(userId: $userId) {
         id
+        userId
         title
         start_time
         end_time
@@ -79,7 +80,11 @@ const GET_EVENTS = gql`
 `;
 
 const CalendarEventsPage = () => {
-  const { loading, error, data } = useQuery(GET_EVENTS);
+  const { loading, error, data } = useQuery(GET_EVENTS, {
+    variables: {
+      userId: "123e4567-e89b-12d3-a456-426614174000"  // Example UUID
+    }
+  });
 
   const formatDateTimeRange = (startTime, endTime) => {
     const start = new Date(startTime);

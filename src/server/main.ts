@@ -5,6 +5,7 @@ import GetEventsForUserByDateRange from './resolvers/get-events-for-users-by-dat
 const typeDefs = gql`
   type RobinEvent {
     id: ID!
+    userId: String!
     title: String!
     start_time: String!
     end_time: String!
@@ -12,7 +13,11 @@ const typeDefs = gql`
   }
 
   type Query {
-    GetEventsForUserByDateRange(startDateTime: String, endDateTime: String): [RobinEvent]!
+    GetEventsForUserByDateRange(
+      startDateTime: String,
+      endDateTime: String,
+      userId: String!
+    ): [RobinEvent]!
   }
 `;
 
