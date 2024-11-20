@@ -1,3 +1,5 @@
+import { Context, getAuthInfo } from '../utils/auth';
+
 export interface RobinEvent {
     id: number;
     userId: string;
@@ -82,10 +84,15 @@ const mockEvents: RobinEvent[] = [
 
 const GetEventsForUserByDateRangeResolver = (
     _: unknown,
-    { startDateTime, endDateTime, userId }: TimeArgs
+    { startDateTime, endDateTime, userId }: TimeArgs,
+    { authenticatedUserId }: Context
 ): RobinEvent[] => {
     if (!userId) {
         throw new Error('Valid userId is required');
+    }
+
+    if (userId !== authenticatedUserId) {
+        throw new Error('Can only get events for yourself');
     }
 
     return mockEvents.filter((event) => {
@@ -102,7 +109,8 @@ const withAuthorization = (
     _: unknown,
     args: TimeArgs
 ) => {
-    return resolver(_, args);
+    const authenticatedUserContext = getAuthInfo();
+    return resolver(_, args, authenticatedUserContext);
 };
 
 export default withAuthorization(GetEventsForUserByDateRangeResolver);
