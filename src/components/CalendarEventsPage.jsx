@@ -1,5 +1,6 @@
 import { useQuery, gql } from '@apollo/client';
 import styled from '@emotion/styled';
+import { useState } from 'react';
 
 const EventsContainer = styled.div`
   width: 100%;
@@ -13,6 +14,34 @@ const EventsContainer = styled.div`
 
 const EventsHeader = styled.h1`
   margin-bottom: 1.5rem;
+`;
+
+const DateRangeContainer = styled.div`
+  margin-bottom: 2rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+`;
+
+const DateTimeInput = styled.input`
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 0.9rem;
+`;
+
+const FilterButton = styled.button`
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+
+  &:hover {
+    background-color: #0056b3;
+  }
 `;
 
 const ScrollableEvents = styled.div`
@@ -67,8 +96,12 @@ const EventTime = styled.div`
 `;
 
 const GET_EVENTS = gql`
-  query GetEventsForUserByDateRange($userId: String!) {
-    GetEventsForUserByDateRange(userId: $userId) {
+  query GetEventsForUserByDateRange($userId: String!, $startDateTime: String, $endDateTime: String) {
+    GetEventsForUserByDateRange(
+      userId: $userId, 
+      startDateTime: $startDateTime, 
+      endDateTime: $endDateTime
+    ) {
         id
         userId
         title
@@ -80,9 +113,14 @@ const GET_EVENTS = gql`
 `;
 
 const CalendarEventsPage = () => {
-  const { loading, error, data } = useQuery(GET_EVENTS, {
+  const [startDateTime, setStartDateTime] = useState('');
+  const [endDateTime, setEndDateTime] = useState('');
+
+  const { loading, error, data, refetch } = useQuery(GET_EVENTS, {
     variables: {
-      userId: "123e4567-e89b-12d3-a456-426614174000"  // Example UUID
+      userId: "123e4567-e89b-12d3-a456-426614174000",
+      startDateTime: startDateTime || undefined,
+      endDateTime: endDateTime || undefined
     }
   });
 
@@ -104,11 +142,38 @@ const CalendarEventsPage = () => {
     })}`;
   };
 
+  const handleFilter = () => {
+    refetch({
+      userId: "123e4567-e89b-12d3-a456-426614174000",
+      startDateTime,
+      endDateTime
+    });
+  };
+
   return (
     <EventsContainer>
       <EventsHeader>Upcoming Calendar Events</EventsHeader>
+      
+      <DateRangeContainer>
+        <DateTimeInput
+          type="datetime-local"
+          value={startDateTime}
+          onChange={(e) => setStartDateTime(e.target.value)}
+          placeholder="Start Date & Time"
+        />
+        <DateTimeInput
+          type="datetime-local"
+          value={endDateTime}
+          onChange={(e) => setEndDateTime(e.target.value)}
+          placeholder="End Date & Time"
+        />
+        <FilterButton onClick={handleFilter}>
+          Filter Events
+        </FilterButton>
+      </DateRangeContainer>
+
       {loading && <p>Loading...</p>}
-      {error && <p>Error!!</p>}
+      {error && <p>Error: {error.message}</p>}
       {data && data.GetEventsForUserByDateRange && (
         <ScrollableEvents>
           {data.GetEventsForUserByDateRange.map((event) => (
